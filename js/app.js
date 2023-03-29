@@ -16,6 +16,7 @@ var gGame = {
 
 function onInit() {
   gGame.isOn = true;
+  gPlayerLives = 3;
   gClickCount = 0;
   if (gGame.isOn) {
     document.querySelector('.modal').classList.add('hidden');
