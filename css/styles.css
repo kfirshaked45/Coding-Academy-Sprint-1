@@ -1,6 +1,7 @@
 table {
   margin-left: auto;
   margin-right: auto;
+  position: static;
 }
 
 tbody img {
@@ -20,4 +21,16 @@ td {
   font-size: 40px;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   text-align: center;
+}
+.modal {
+  width: 300px;
+  height: 300px;
+  margin-left: 40%;
+  text-align: center;
+  position: absolute;
+  margin-top: auto;
+  background-color: black;
+}
+.hidden {
+  display: none;
 }

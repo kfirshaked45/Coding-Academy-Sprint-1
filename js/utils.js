@@ -14,7 +14,6 @@ function buildBoard() {
       board[i][j] = cell;
     }
   }
-  buildMines(board);
   // board[2][2].isMine = true;
   // board[0][0].isMine = true;
   // console.log(board[2][2]);

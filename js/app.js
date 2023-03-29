@@ -1,7 +1,9 @@
 'use strict';
 
 var gBoard = [];
-var gLevel = {
+var gClickCount = 0;
+var gPlayerLives = 3;
+const gLevel = {
   size: 4,
   mines: 2,
 };
@@ -13,12 +15,18 @@ var gGame = {
 };
 
 function onInit() {
-  gBoard = buildBoard();
-  setMinesNegsCount(gBoard);
-  renderBoard(gBoard, '.board');
+  gGame.isOn = true;
+  gClickCount = 0;
+  if (gGame.isOn) {
+    document.querySelector('.modal').classList.add('hidden');
+    gBoard = buildBoard();
+    renderBoard(gBoard, '.board');
+  }
 }
 
-function gameOver() {
+function playerHit() {
+  gPlayerLives--;
+  checkGameOver();
   for (let i = 0; i < gBoard.length; i++) {
     for (let j = 0; j < gBoard.length; j++) {
       const currCell = gBoard[i][j];
@@ -29,7 +37,18 @@ function gameOver() {
       }
     }
   }
-  console.log('You lose!');
+  if (gPlayerLives !== 0) {
+    console.log('Lost a Life! ' + 'Lifes left: ' + gPlayerLives);
+  } else {
+    console.log('Game over!');
+  }
+}
+function checkGameOver() {
+  if (gPlayerLives === 0) {
+    gGame.isOn = false;
+    document.querySelector('.modal').classList.remove('hidden');
+    return;
+  }
 }
 
 function setMinesNegsCount(board) {
@@ -56,14 +75,17 @@ function setMinesNegsCount(board) {
 function cellClicked(elCell, i, j) {
   const cell = gBoard[i][j];
   if (cell.isMine) {
-    gameOver();
+    playerHit();
     elCell.innerHTML = `<img src='images/gameover.png'/>`;
+
     return;
   }
+  if (gClickCount === 0) {
+    buildMines(gBoard);
+    setMinesNegsCount(gBoard);
+    gClickCount++;
+  }
 
-  // TODO: ignore none seats and booked
-  // Support selecting a seat
-  // elCell.classList.add('selected');
   elCell.innerHTML = `<img src='images/${cell.minesAroundCount}.png'/>`;
 }
 
