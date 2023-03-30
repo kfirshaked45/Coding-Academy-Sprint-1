@@ -164,6 +164,7 @@ function expandClearNeighbors(rowIdx, colIdx) {
       if (currCell.isShown) return;
       if (currCell.isMine) return;
       if (lastCell.minesAroundCount > 0 && currCell.minesAroundCount > 0) return;
+
       currImg.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
       currCell.isShown = true;
       // console.log(currCell);
