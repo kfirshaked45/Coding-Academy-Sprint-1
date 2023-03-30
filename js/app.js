@@ -3,6 +3,9 @@
 var gBoard = [];
 var gClickCount = 0;
 var gPlayerLives = 3;
+var gTotalLeft = 0;
+var gCurrSmily = document.querySelector('.smily');
+
 const gLevel = {
   size: 4,
   mines: 2,
@@ -18,21 +21,41 @@ function onInit() {
   gGame.isOn = true;
   gPlayerLives = 3;
   gClickCount = 0;
+  gCurrSmily.src = 'images/restart.jpg';
+  gTotalLeft = gLevel.size * gLevel.size - gLevel.mines;
+
   if (gGame.isOn) {
     document.querySelector('.modal').classList.add('hidden');
     gBoard = buildBoard();
     renderBoard(gBoard, '.board');
+    rightClickListener();
   }
+}
+
+function rightClickListener() {
+  addEventListener('contextmenu', (event) => {
+    var indexs = [event.target.parentElement.classList[1]];
+    setMarker(indexs);
+  });
+  document.addEventListener('contextmenu', (event) => event.preventDefault());
+}
+
+function setMarker(className) {
+  var markedCell = document.querySelector(`.${className}`);
+  markedCell.innerHTML = '<img src="images/cellFlag.jpg">';
+  console.log(markedCell);
 }
 
 function playerHit() {
   gPlayerLives--;
+
   checkGameOver();
   for (let i = 0; i < gBoard.length; i++) {
     for (let j = 0; j < gBoard.length; j++) {
       const currCell = gBoard[i][j];
       if (currCell.isMine) {
         var currHTMLCell = document.querySelector(`.cell-${i}-${j}`);
+        currCell.isShown = true;
         currHTMLCell.innerHTML = `<img src='images/mine.jpg'/>`;
         console.log(currHTMLCell);
       }
@@ -41,27 +64,30 @@ function playerHit() {
   if (gPlayerLives !== 0) {
     console.log('Lost a Life! ' + 'Lifes left: ' + gPlayerLives);
   } else {
+    gCurrSmily.src = 'images/lose.png';
+
     console.log('Game over!');
   }
 }
 function checkGameOver() {
   if (gPlayerLives === 0) {
     gGame.isOn = false;
-    document.querySelector('.modal').classList.remove('hidden');
+
     return;
   }
 }
 
 function setMinesNegsCount(board) {
-  const numOfRows = board.length;
-  const numOfCols = board[0].length;
-  for (var i = 0; i < numOfRows; i++) {
-    for (var j = 0; j < numOfCols; j++) {
-      for (var lastAndNextRow = -1; lastAndNextRow <= 1; lastAndNextRow++) {
-        for (var lastAndNextCol = -1; lastAndNextCol <= 1; lastAndNextCol++) {
-          const currNeighborRow = lastAndNextRow + i;
-          const currNeighborCol = lastAndNextCol + j;
-          if (currNeighborRow < 0 || currNeighborRow >= numOfRows || currNeighborCol < 0 || currNeighborCol >= numOfCols) {
+  var neighborCount = 0;
+  const rowsLength = board.length;
+  const colsLength = board[0].length;
+  for (var i = 0; i < rowsLength; i++) {
+    for (var j = 0; j < colsLength; j++) {
+      for (var neighborRowIdx = -1; neighborRowIdx <= 1; neighborRowIdx++) {
+        for (var neighborColIdx = -1; neighborColIdx <= 1; neighborColIdx++) {
+          const currNeighborRow = neighborRowIdx + i;
+          const currNeighborCol = neighborColIdx + j;
+          if (currNeighborRow < 0 || currNeighborRow >= rowsLength || currNeighborCol < 0 || currNeighborCol >= colsLength) {
             continue;
           }
           if (board[i][j].isMine) {
@@ -73,34 +99,48 @@ function setMinesNegsCount(board) {
   }
 }
 
+function clearNeighborsAround(rowIdx, colIdx) {
+  var seatCount = 0;
+  for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+    if (i < 0 || i >= gCinema.length) continue;
+    for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+      if (i === rowIdx && j === colIdx) continue;
+      if (j < 0 || j >= gCinema[0].length) continue;
+      var currCell = gCinema[i][j];
+      if (currCell.isSeat && !currCell.isBooked) seatCount++;
+    }
+  }
+  return seatCount;
+}
+
 function cellClicked(elCell, i, j) {
   const cell = gBoard[i][j];
   if (cell.isMine) {
     playerHit();
     elCell.innerHTML = `<img src='images/gameover.png'/>`;
-
     return;
   }
+  if (gPlayerLives === 0) return;
+  if (gTotalLeft === 0) return;
+  if (cell.isMine) return;
+  if (elCell.classList.contains('selected')) return;
+
   if (gClickCount === 0) {
     buildMines(gBoard);
     setMinesNegsCount(gBoard);
     gClickCount++;
   }
 
+  elCell.classList.add('selected');
   elCell.innerHTML = `<img src='images/${cell.minesAroundCount}.png'/>`;
+  gTotalLeft--;
+  console.log(gTotalLeft);
+  if (gTotalLeft === 0) {
+    gCurrSmily.src = 'images/win.png';
+    console.log('You win!');
+  }
 }
 
-// onInit() This is called when page loads
-// buildBoard() Builds the board
-// Set the mines
-// Call setMinesNegsCount()
-// Return the created board
-// setMinesNegsCount(board) Count mines around each cell
-// and set the cell's
-// minesAroundCount.
-// renderBoard(board) Render the board as a <table>
-// to the page
-// onCellClicked(elCell, i, j) Called when a cell is clicked
 // onCellMarked(elCell) Called when a cell is right-
 // clicked
 // See how you can hide the context
