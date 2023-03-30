@@ -188,6 +188,7 @@ function checkWin() {
 function cellClicked(elCell, i, j) {
   // console.log(elCell);
   const cell = gBoard[i][j];
+  if (cell.isMarked) return;
   if (cell.isShown) return;
   if (gPlayerLives === 0) return;
 
