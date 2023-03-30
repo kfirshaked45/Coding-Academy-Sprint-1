@@ -3,8 +3,8 @@
 var gBoard = [];
 var gClickCount = 0;
 var gPlayerLives = 3;
-var gTotalLeft = 0;
 var gCurrSmily = document.querySelector('.smily');
+var gTimer = null;
 
 const gLevel = {
   size: 4,
@@ -19,44 +19,57 @@ var gGame = {
 
 function onInit() {
   gGame.isOn = true;
+  gGame.shownCount = 0;
+  gGame.markedCount = 0;
+  gGame.secsPassed = 0;
   gPlayerLives = 3;
   gClickCount = 0;
   gCurrSmily.src = 'images/restart.jpg';
-  gTotalLeft = gLevel.size * gLevel.size - gLevel.mines;
 
   if (gGame.isOn) {
     gBoard = buildBoard();
     renderBoard(gBoard, '.board');
     rightClickListener();
+    gTimer = setInterval(() => {
+      gGame.secsPassed++;
+      document.querySelector('h4').innerHTML = `Timer: ${gGame.secsPassed}`;
+    }, 1000);
   }
 }
 
 function rightClickListener() {
-  addEventListener('contextmenu', (event) => {
-    var indexs = [event.target.parentElement.classList[1]];
+  window.addEventListener('contextmenu', (event) => {
+    console.log(event);
+
+    var indexs = event.target.offsetParent.classList[1];
     setMarker(indexs);
   });
   document.addEventListener('contextmenu', (event) => event.preventDefault());
 }
 
 function setMarker(className) {
-  var markedCell = document.querySelector(`.${className}`);
-  markedCell.isMarked = true;
-  if (markedCell.classList.contains('selected')) {
-    if (markedCell.isMine) {
-      markedCell.isMarked = false;
-    }
-    markedCell.classList.remove('selected');
-    markedCell.innerHTML = '<img src="images/empty.png">';
-  } else {
-    if (markedCell.isMine) {
-      markedCell.isMarked = true;
-    }
-    markedCell.classList.add('selected');
-    markedCell.innerHTML = '<img src="images/cellFlag.jpg">';
-  }
+  var markedImg = document.querySelector(`.${className}`);
+  var markedIndexAndJ = markedImg.classList[1].split('-');
+  var markedCell = gBoard[markedIndexAndJ[1]][markedIndexAndJ[2]];
+  // console.log(markedImg, markedCell, markedIndexAndJ);
 
-  console.log(markedCell);
+  if (markedCell.isShown) {
+    if (markedCell.isMine) {
+      gGame.markedCount--;
+    }
+
+    markedCell.isMarked = false;
+    markedImg.classList.remove('selected');
+    markedImg.innerHTML = '<img src="images/empty.png">';
+  } else {
+    markedCell.isMarked = true;
+    markedImg.classList.add('selected');
+    markedImg.innerHTML = '<img src="images/cellFlag.jpg">';
+    if (markedCell.isMine) {
+      gGame.markedCount++;
+      checkWin();
+    }
+  }
 }
 
 function showAllMinesOnDeath() {
@@ -66,7 +79,6 @@ function showAllMinesOnDeath() {
       if (gPlayerLives === 0) {
         if (currCell.isMine) {
           var currHTMLCell = document.querySelector(`.cell-${i}-${j}`);
-          currCell.isShown = true;
           currHTMLCell.innerHTML = `<img src='images/mine.jpg'/>`;
           // console.log(currHTMLCell);
         }
@@ -92,7 +104,7 @@ function playerHit() {
 function checkGameOver() {
   if (gPlayerLives === 0) {
     gGame.isOn = false;
-
+    clearInterval(gTimer);
     return;
   }
 }
@@ -119,7 +131,8 @@ function setMinesNegsCount(board) {
 }
 
 function expandClearNeighbors(rowIdx, colIdx) {
-  var neighborCount = 0;
+  // console.log(gBoard[rowIdx][colIdx]);
+  if (gBoard[rowIdx][colIdx].isShown) return;
   for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
     if (i < 0 || i >= gBoard.length) continue;
     for (var j = colIdx - 1; j <= colIdx + 1; j++) {
@@ -127,22 +140,36 @@ function expandClearNeighbors(rowIdx, colIdx) {
       if (j < 0 || j >= gBoard[0].length) continue;
       var currImg = document.querySelector(`.cell-${i}-${j}`);
       var currCell = gBoard[i][j];
-      if (currCell.isMine) {
-        neighborCount++;
-        return;
-      } else if (neighborCount === 0) {
-        currImg.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
-        currCell.isShown = true;
-      }
+      var lastCell = gBoard[rowIdx][colIdx];
+      if (currCell.isShown) return;
+      if (currCell.isMine) return;
+      if (lastCell.minesAroundCount > 0 && currCell.minesAroundCount > 0) return;
+      currImg.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
+      currCell.isShown = true;
+      // console.log(currCell);
+      gGame.shownCount++;
+    }
+  }
+}
+
+function checkWin() {
+  var totalShownNeeded = gLevel.size * gLevel.size - gLevel.mines;
+  console.log(gGame.shownCount);
+  if (gGame.markedCount === gLevel.mines) {
+    if (gGame.shownCount === totalShownNeeded) {
+      gCurrSmily.src = 'images/win.png';
+      console.log('You win!');
+      clearInterval(gTimer);
     }
   }
 }
 
 function cellClicked(elCell, i, j) {
-  if (elCell.classList.contains('selected')) return;
-  if (gPlayerLives === 0) return;
-  if (gTotalLeft === 0) return;
+  // console.log(elCell);
   const cell = gBoard[i][j];
+  if (cell.isShown) return;
+  if (gPlayerLives === 0) return;
+
   if (cell.isMine) {
     playerHit();
     elCell.innerHTML = `<img src='images/gameover.png'/>`;
@@ -156,17 +183,11 @@ function cellClicked(elCell, i, j) {
   }
 
   expandClearNeighbors(i, j);
-
   elCell.classList.add('selected');
-  elCell.isShown = true;
+  cell.isShown = true;
+  gGame.shownCount++;
   elCell.innerHTML = `<img src='images/${cell.minesAroundCount}.png'/>`;
-  // console.log(elCell, 'elcell');
-  gTotalLeft--;
-  // console.log(gTotalLeft);
-  if (gTotalLeft === 0) {
-    gCurrSmily.src = 'images/win.png';
-    console.log('You win!');
-  }
+  checkWin();
 }
 
 function handleLevel(elButton) {
@@ -185,22 +206,6 @@ function handleLevel(elButton) {
   }
 }
 
-// onCellMarked(elCell) Called when a cell is right-
-// clicked
-// See how you can hide the context
-// menu on right click
-// checkGameOver() Game ends when all mines are
-// marked, and all the other cells
-// are shown
-// expandShown(board, elCell,
-// i, j) When user clicks a cell with no
-// mines around, we need to open
-// not only that cell, but also its
-// neighbors.
-// NOTE: start with a basic
-// implementation that only opens
-// the non-mine 1st degree
-// neighbors
 // BONUS: if you have the time
 // later, try to work more like the
 // real algorithm (see description
