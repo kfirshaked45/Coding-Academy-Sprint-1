@@ -1,3 +1,14 @@
+body {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  background-color: rgb(238, 238, 202);
+}
+
+.dark {
+  margin-left: 8%;
+  border-radius: 10%;
+  font-size: large;
+}
+
 table {
   margin-left: auto;
   margin-right: auto;
@@ -19,13 +30,13 @@ td {
   height: 100px;
   margin: 0 50% 0 48%;
 }
-
-/* #smily:onclick { */
-/* } */
+/* .smily:active {
+  background: url('../images/lose.png');
+} */
 
 .text {
   font-size: 40px;
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
   text-align: center;
 }
 .modal {
@@ -53,7 +64,6 @@ td {
 .levelSelector {
   margin-left: 43%;
   font-size: x-large;
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 h4 {
   margin-left: 45%;

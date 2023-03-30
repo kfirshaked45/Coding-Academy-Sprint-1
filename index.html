@@ -10,11 +10,14 @@
   <body onload="onInit()">
     <h1 class="text">Minesweeper!</h1>
     <img class="smily" src="images/restart.jpg" onclick="onInit()" />
+
     <h4>Timer:</h4>
+
     <div class="levelSelector">
       <input type="radio" name="level" value="beginner" onclick="handleLevel(this)" /><label>Beginner</label
       ><input type="radio" name="level" value="medium" onclick="handleLevel(this)" /><label>Medium</label
       ><input type="radio" name="level" value="expert" onclick="handleLevel(this)" /><label>Expert</label>
+      <button class="dark" onclick="darkMode()">Dark mode</button>
     </div>
 
     <!-- <div class="modal hidden"><button onclick="onInit()">Restart?</button></div> -->

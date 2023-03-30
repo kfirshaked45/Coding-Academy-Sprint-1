@@ -4,7 +4,10 @@ var gBoard = [];
 var gClickCount = 0;
 var gPlayerLives = 3;
 var gCurrSmily = document.querySelector('.smily');
-var gTimer = null;
+var gSecond = 0;
+var gMinute = 0;
+
+var gTimer = 0;
 
 const gLevel = {
   size: 4,
@@ -22,8 +25,11 @@ function onInit() {
   gGame.shownCount = 0;
   gGame.markedCount = 0;
   gGame.secsPassed = 0;
+  gSecond = 0;
+  gMinute = 0;
   gPlayerLives = 3;
   gClickCount = 0;
+  clearInterval(gTimer);
   gCurrSmily.src = 'images/restart.jpg';
 
   if (gGame.isOn) {
@@ -31,13 +37,25 @@ function onInit() {
     renderBoard(gBoard, '.board');
     rightClickListener();
     gTimer = setInterval(() => {
+      if (gSecond === 60) {
+        gSecond = 0;
+        gMinute++;
+      }
+      gSecond++;
       gGame.secsPassed++;
-      document.querySelector('h4').innerHTML = `Timer: ${gGame.secsPassed}`;
+      if (gSecond < 10) {
+        document.querySelector('h4').innerHTML = `Timer: 0${gMinute}:0${gSecond}`;
+      } else if (gMinute < 10) {
+        document.querySelector('h4').innerHTML = `Timer: 0${gMinute}:${gSecond}`;
+      } else {
+        document.querySelector('h4').innerHTML = `Timer: ${gMinute}:${gSecond}`;
+      }
     }, 1000);
   }
 }
 
 function rightClickListener() {
+  if (gPlayerLives === 0) return;
   window.addEventListener('contextmenu', (event) => {
     console.log(event);
 
@@ -48,12 +66,13 @@ function rightClickListener() {
 }
 
 function setMarker(className) {
+  if (gPlayerLives === 0) return;
   var markedImg = document.querySelector(`.${className}`);
   var markedIndexAndJ = markedImg.classList[1].split('-');
   var markedCell = gBoard[markedIndexAndJ[1]][markedIndexAndJ[2]];
   // console.log(markedImg, markedCell, markedIndexAndJ);
 
-  if (markedCell.isShown) {
+  if (markedCell.isMarked) {
     if (markedCell.isMine) {
       gGame.markedCount--;
     }
@@ -205,7 +224,10 @@ function handleLevel(elButton) {
     onInit();
   }
 }
-
+function darkMode() {
+  document.querySelector('body').style.backgroundColor = 'Black';
+  document.querySelector('body').style.color = 'White';
+}
 // BONUS: if you have the time
 // later, try to work more like the
 // real algorithm (see description
