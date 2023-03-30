@@ -50,3 +50,8 @@ td {
 .hidden {
   display: none;
 }
+.levelSelector {
+  margin-left: 43%;
+  font-size: x-large;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}

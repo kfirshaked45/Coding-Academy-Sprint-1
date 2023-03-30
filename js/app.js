@@ -25,7 +25,6 @@ function onInit() {
   gTotalLeft = gLevel.size * gLevel.size - gLevel.mines;
 
   if (gGame.isOn) {
-    document.querySelector('.modal').classList.add('hidden');
     gBoard = buildBoard();
     renderBoard(gBoard, '.board');
     rightClickListener();
@@ -42,25 +41,46 @@ function rightClickListener() {
 
 function setMarker(className) {
   var markedCell = document.querySelector(`.${className}`);
-  markedCell.innerHTML = '<img src="images/cellFlag.jpg">';
+  markedCell.isMarked = true;
+  if (markedCell.classList.contains('selected')) {
+    if (markedCell.isMine) {
+      markedCell.isMarked = false;
+    }
+    markedCell.classList.remove('selected');
+    markedCell.innerHTML = '<img src="images/empty.png">';
+  } else {
+    if (markedCell.isMine) {
+      markedCell.isMarked = true;
+    }
+    markedCell.classList.add('selected');
+    markedCell.innerHTML = '<img src="images/cellFlag.jpg">';
+  }
+
   console.log(markedCell);
+}
+
+function showAllMinesOnDeath() {
+  for (let i = 0; i < gBoard.length; i++) {
+    for (let j = 0; j < gBoard.length; j++) {
+      const currCell = gBoard[i][j];
+      if (gPlayerLives === 0) {
+        if (currCell.isMine) {
+          var currHTMLCell = document.querySelector(`.cell-${i}-${j}`);
+          currCell.isShown = true;
+          currHTMLCell.innerHTML = `<img src='images/mine.jpg'/>`;
+          // console.log(currHTMLCell);
+        }
+      }
+    }
+  }
 }
 
 function playerHit() {
   gPlayerLives--;
 
   checkGameOver();
-  for (let i = 0; i < gBoard.length; i++) {
-    for (let j = 0; j < gBoard.length; j++) {
-      const currCell = gBoard[i][j];
-      if (currCell.isMine) {
-        var currHTMLCell = document.querySelector(`.cell-${i}-${j}`);
-        currCell.isShown = true;
-        currHTMLCell.innerHTML = `<img src='images/mine.jpg'/>`;
-        console.log(currHTMLCell);
-      }
-    }
-  }
+  showAllMinesOnDeath();
+
   if (gPlayerLives !== 0) {
     console.log('Lost a Life! ' + 'Lifes left: ' + gPlayerLives);
   } else {
@@ -78,7 +98,6 @@ function checkGameOver() {
 }
 
 function setMinesNegsCount(board) {
-  var neighborCount = 0;
   const rowsLength = board.length;
   const colsLength = board[0].length;
   for (var i = 0; i < rowsLength; i++) {
@@ -99,45 +118,70 @@ function setMinesNegsCount(board) {
   }
 }
 
-function clearNeighborsAround(rowIdx, colIdx) {
-  var seatCount = 0;
+function expandClearNeighbors(rowIdx, colIdx) {
+  var neighborCount = 0;
   for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
-    if (i < 0 || i >= gCinema.length) continue;
+    if (i < 0 || i >= gBoard.length) continue;
     for (var j = colIdx - 1; j <= colIdx + 1; j++) {
       if (i === rowIdx && j === colIdx) continue;
-      if (j < 0 || j >= gCinema[0].length) continue;
-      var currCell = gCinema[i][j];
-      if (currCell.isSeat && !currCell.isBooked) seatCount++;
+      if (j < 0 || j >= gBoard[0].length) continue;
+      var currImg = document.querySelector(`.cell-${i}-${j}`);
+      var currCell = gBoard[i][j];
+      if (currCell.isMine) {
+        neighborCount++;
+        return;
+      } else if (neighborCount === 0) {
+        currImg.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
+        currCell.isShown = true;
+      }
     }
   }
-  return seatCount;
 }
 
 function cellClicked(elCell, i, j) {
+  if (elCell.classList.contains('selected')) return;
+  if (gPlayerLives === 0) return;
+  if (gTotalLeft === 0) return;
   const cell = gBoard[i][j];
   if (cell.isMine) {
     playerHit();
     elCell.innerHTML = `<img src='images/gameover.png'/>`;
     return;
   }
-  if (gPlayerLives === 0) return;
-  if (gTotalLeft === 0) return;
   if (cell.isMine) return;
-  if (elCell.classList.contains('selected')) return;
-
   if (gClickCount === 0) {
     buildMines(gBoard);
     setMinesNegsCount(gBoard);
     gClickCount++;
   }
 
+  expandClearNeighbors(i, j);
+
   elCell.classList.add('selected');
+  elCell.isShown = true;
   elCell.innerHTML = `<img src='images/${cell.minesAroundCount}.png'/>`;
+  // console.log(elCell, 'elcell');
   gTotalLeft--;
-  console.log(gTotalLeft);
+  // console.log(gTotalLeft);
   if (gTotalLeft === 0) {
     gCurrSmily.src = 'images/win.png';
     console.log('You win!');
+  }
+}
+
+function handleLevel(elButton) {
+  if (elButton.value === 'beginner') {
+    gLevel.size = 4;
+    gLevel.mines = 2;
+    onInit();
+  } else if (elButton.value === 'medium') {
+    gLevel.size = 8;
+    gLevel.mines = 14;
+    onInit();
+  } else {
+    gLevel.size = 12;
+    gLevel.mines = 32;
+    onInit();
   }
 }
 
