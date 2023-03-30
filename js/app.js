@@ -70,6 +70,7 @@ function setMarker(className) {
   var markedImg = document.querySelector(`.${className}`);
   var markedIndexAndJ = markedImg.classList[1].split('-');
   var markedCell = gBoard[markedIndexAndJ[1]][markedIndexAndJ[2]];
+  if (markedCell.isShown) return;
   // console.log(markedImg, markedCell, markedIndexAndJ);
 
   if (markedCell.isMarked) {
