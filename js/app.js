@@ -6,7 +6,7 @@ var gPlayerLives = 3;
 var gCurrSmily = document.querySelector('.smily');
 var gSecond = 0;
 var gMinute = 0;
-var gIsClicked = false;
+// var gIsClicked = false;
 
 var gTimer = 0;
 
@@ -144,7 +144,7 @@ function setMinesNegsCount(board) {
             continue;
           }
           if (board[i][j].isMine) {
-            if (gIsClicked) board[currNeighborRow][currNeighborCol].minesAroundCount = 0;
+            // if (gIsClicked) board[currNeighborRow][currNeighborCol].minesAroundCount = 0;
             board[currNeighborRow][currNeighborCol].minesAroundCount++;
           }
         }
@@ -244,7 +244,7 @@ function darkMode() {
 }
 function minesExterminator() {
   var countDestroyed = 0;
-  gIsClicked = true;
+  // gIsClicked = true;
 
   for (let i = 0; i < gBoard.length; i++) {
     for (let j = 0; j < gBoard[0].length; j++) {
@@ -253,14 +253,13 @@ function minesExterminator() {
       if (currCell.isMine) {
         console.log(currCell);
         currCell.isMine = false;
-        currCell.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
+        currCell.innerHTML = `<img src='images/0.png'/>`;
         countDestroyed++;
-        currCell.isMarked = true;
-
-        setMinesNegsCount(gBoard);
+        gGame.markedCount++;
       }
     }
   }
+  setMinesNegsCount(gBoard);
 }
 
 // function handleHint() {
