@@ -69,3 +69,9 @@ h4 {
   margin-left: 45%;
   font-size: x-large;
 }
+.hint {
+  display: inline-block;
+}
+.exterminator {
+  margin-left: 55%;
+}

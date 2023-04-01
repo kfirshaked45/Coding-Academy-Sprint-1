@@ -6,6 +6,7 @@ var gPlayerLives = 3;
 var gCurrSmily = document.querySelector('.smily');
 var gSecond = 0;
 var gMinute = 0;
+var gIsClicked = false;
 
 var gTimer = 0;
 
@@ -30,6 +31,7 @@ function onInit() {
   gPlayerLives = 3;
   gClickCount = 0;
   clearInterval(gTimer);
+  // createHints();
   gCurrSmily.src = 'images/restart.jpg';
 
   if (gGame.isOn) {
@@ -142,6 +144,7 @@ function setMinesNegsCount(board) {
             continue;
           }
           if (board[i][j].isMine) {
+            if (gIsClicked) board[currNeighborRow][currNeighborCol].minesAroundCount = 0;
             board[currNeighborRow][currNeighborCol].minesAroundCount++;
           }
         }
@@ -164,6 +167,15 @@ function expandClearNeighbors(rowIdx, colIdx) {
       if (currCell.isShown) return;
       if (currCell.isMine) return;
       if (lastCell.minesAroundCount > 0 && currCell.minesAroundCount > 0) return;
+      // var isHint = handleHint();
+      // if (isHint) {
+      //   currImg.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
+      //   currCell.isShown = true;
+      //   setTimeout(() => {
+      //     currImg.innerHTML = `<img src='images/empty.png'/>`;
+      //     currCell.isShown = false;
+      //   }, 1000);
+      // }
 
       currImg.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
       currCell.isShown = true;
@@ -203,7 +215,6 @@ function cellClicked(elCell, i, j) {
     setMinesNegsCount(gBoard);
     gClickCount++;
   }
-
   expandClearNeighbors(i, j);
   elCell.classList.add('selected');
   cell.isShown = true;
@@ -231,6 +242,42 @@ function darkMode() {
   document.querySelector('body').style.backgroundColor = 'Black';
   document.querySelector('body').style.color = 'White';
 }
+function minesExterminator() {
+  var countDestroyed = 0;
+  gIsClicked = true;
+
+  for (let i = 0; i < gBoard.length; i++) {
+    for (let j = 0; j < gBoard[0].length; j++) {
+      var currCell = gBoard[i][j];
+      if (countDestroyed === 3) return;
+      if (currCell.isMine) {
+        console.log(currCell);
+        currCell.isMine = false;
+        currCell.innerHTML = `<img src='images/${currCell.minesAroundCount}.png'/>`;
+        countDestroyed++;
+        currCell.isMarked = true;
+
+        setMinesNegsCount(gBoard);
+      }
+    }
+  }
+}
+
+// function handleHint() {
+//   return true;
+// }
+// function createHints() {
+//   var hintsDiv = document.querySelector('.hints');
+//   // 💥
+//   for (let i = 0; i < 3; i++) {
+//     hintsDiv.innerHTML += `<div class='hint' onclick='handleHint()'>💡</div>`;
+//
+//   console.log(hintsDiv);
+// }
+// Clicking the “Exterminator” button, eliminate 3 of the existing
+// mines, randomly. These mines will disappear from the board.
+// We will need re-calculation of neighbors-coun
+
 // BONUS: if you have the time
 // later, try to work more like the
 // real algorithm (see description
